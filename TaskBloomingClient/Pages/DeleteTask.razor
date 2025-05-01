@@ -1,0 +1,30 @@
+﻿@page "/deletetask"
+@inject HttpClient Http
+
+<h3>🗑️ Delete Task</h3>
+
+<input type="text" class="form-control mb-2" @bind="taskId" placeholder="Enter Task ID to delete" />
+<button class="btn btn-danger" @onclick="PerformDelete">Delete</button>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info mt-3">@message</div>
+}
+
+@code {
+    private string taskId = "";
+    private string message = "";
+
+    private async Task PerformDelete()
+    {
+        if (int.TryParse(taskId, out int id))
+        {
+            var response = await Http.DeleteAsync($"http://localhost:5194/api/Task/{id}");
+            message = response.IsSuccessStatusCode ? "✅ Task deleted!" : "❌ Failed to delete.";
+        }
+        else
+        {
+            message = "❌ Invalid Task ID.";
+        }
+    }
+}

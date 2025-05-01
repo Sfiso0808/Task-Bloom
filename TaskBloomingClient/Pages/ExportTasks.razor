@@ -1,0 +1,12 @@
+﻿@page "/exporttasks"
+@inject NavigationManager Navigation
+
+<h3>📤 Export Options</h3>
+
+<p>This section is handled directly inside the <strong>Task Manager</strong> screen. Use the buttons at the bottom of the task list to export.</p>
+
+<button class="btn btn-primary" @onclick="GoBack">← Back to Tasks</button>
+
+@code {
+    private void GoBack() => Navigation.NavigateTo("/tasks");
+}

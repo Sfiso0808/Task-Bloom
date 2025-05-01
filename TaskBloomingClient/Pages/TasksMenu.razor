@@ -1,0 +1,30 @@
+﻿@page "/tasks-menu"
+
+
+<h2>📋 Task Menu</h2>
+
+<p>Select an option below:</p>
+
+<ul class="list-group">
+    <li class="list-group-item">
+        <NavLink href="/tasks/add">➕ 1. Add New Task</NavLink>
+    </li>
+    <li class="list-group-item">
+        <NavLink href="/tasks/list">📋 2. List All Tasks</NavLink>
+    </li>
+    <li class="list-group-item">
+        <NavLink href="/tasks/complete">✅ 3. Mark Task as Complete</NavLink>
+    </li>
+    <li class="list-group-item">
+        <NavLink href="/tasks/delete">🗑️ 4. Delete Task</NavLink>
+    </li>
+    <li class="list-group-item">
+        <NavLink href="/tasks/export">📄 5. Export Tasks to CSV</NavLink>
+    </li>
+    <li class="list-group-item">
+        <NavLink href="/tasks/dashboard">📊 6. View Dashboard Summary</NavLink>
+    </li>
+    <li class="list-group-item">
+        <NavLink href="/">🚪 0. Exit to Home</NavLink>
+    </li>
+</ul>

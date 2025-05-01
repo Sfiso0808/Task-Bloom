@@ -1,0 +1,48 @@
+﻿@page "/markcomplete"
+@inject HttpClient Http
+
+<h3>✅ Mark Task as Complete</h3>
+
+<input type="text" class="form-control mb-2" @bind="taskId" placeholder="Enter Task ID to mark complete" />
+<button class="btn btn-success" @onclick="MarkSelectedTaskComplete">Mark Complete</button>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info mt-3">@message</div>
+}
+
+@code {
+    private string taskId = "";
+    private string message = "";
+
+    private async Task MarkSelectedTaskComplete()
+    {
+        if (int.TryParse(taskId, out int id))
+        {
+            var task = await Http.GetFromJsonAsync<TaskModel>($"http://localhost:5194/api/Task/{id}");
+            if (task is null)
+            {
+                message = "❌ Task not found.";
+                return;
+            }
+
+            task.IsCompleted = true;
+            var response = await Http.PutAsJsonAsync($"http://localhost:5194/api/Task/{id}", task);
+            message = response.IsSuccessStatusCode ? "✅ Marked as completed!" : "❌ Failed to update.";
+        }
+        else
+        {
+            message = "❌ Invalid Task ID.";
+        }
+    }
+
+    public class TaskModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public DateTime DueDate { get; set; }
+        public int Priority { get; set; }
+        public bool IsCompleted { get; set; }
+    }
+}

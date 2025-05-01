@@ -1,0 +1,262 @@
+﻿@page "/tasks"
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<h2>📋 Task Manager</h2>
+
+<div class="mb-3 d-flex gap-2">
+    <button class="btn btn-primary" @onclick="ToggleAddTaskForm">➕ Add New Task</button>
+</div>
+
+@if (showAddTaskForm)
+{
+    <EditForm Model="newTask" OnValidSubmit="AddTaskAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="card card-body mb-4">
+            <h4>Add New Task</h4>
+
+            <div class="mb-2">
+                <InputText @bind-Value="newTask.Title" class="form-control" placeholder="Task Title" />
+            </div>
+            <div class="mb-2">
+                <InputText @bind-Value="newTask.Description" class="form-control" placeholder="Task Description" />
+            </div>
+            <div class="mb-2">
+                <InputDate @bind-Value="newTask.DueDate" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <InputNumber @bind-Value="newTask.Priority" class="form-control" placeholder="1 = Low Priority, 5 = Urgent" />
+            </div>
+
+            <button class="btn btn-success" type="submit">Save Task</button>
+        </div>
+    </EditForm>
+}
+
+@if (tasks != null)
+{
+    <h4>All Tasks:</h4>
+
+    <div class="d-flex gap-2 mb-3">
+        <select class="form-select w-auto" @bind="selectedSort">
+            <option value="">🔀 Sort By</option>
+            <option value="id">ID</option>
+            <option value="priority">Priority</option>
+            <option value="due">Due Date</option>
+        </select>
+
+        <select class="form-select w-auto" @bind="statusFilter">
+            <option value="all">🔎 Filter By Status</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+        </select>
+
+        <button class="btn btn-outline-secondary" @onclick="ApplyFilterAndSort">Apply</button>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Due Date</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in tasks)
+            {
+                <tr>
+                    <td>@task.Id</td>
+                    <td>@task.Title</td>
+                    <td>@task.DueDate.ToString("yyyy-MM-dd")</td>
+                    <td>@task.Priority</td>
+                    <td>
+                        @if (task.IsCompleted)
+                        {
+                            <span class="text-success">✔ Completed</span>
+                        }
+                        else
+                        {
+                            <span class="text-warning">⏳ Pending</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!task.IsCompleted)
+                        {
+                            <button class="btn btn-success btn-sm me-1" @onclick="() => MarkCompleteAsync(task.Id)">✅ Complete</button>
+                        }
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteTaskAsync(task.Id)">🗑️ Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(message) && DateTime.Now < messageExpiry)
+{
+    <div class="alert alert-info mt-3">@message</div>
+}
+
+<hr />
+
+<div class="d-flex flex-wrap gap-2 mt-4">
+    <button class="btn btn-outline-primary" @onclick="ExportTasksToCsv">📄 Export Tasks to CSV</button>
+    <button class="btn btn-outline-success" @onclick="ExportCompletedTasksToLog">📄 Export Completed Log</button>
+    <button class="btn btn-outline-danger" @onclick="ExitToHome">🚪 Exit</button>
+</div>
+
+@code {
+    private List<TaskModel> allTasks = new();
+    private List<TaskModel> tasks = new();
+    private TaskModel newTask = new() { DueDate = DateTime.Today };
+    private bool showAddTaskForm = false;
+    private string message = "";
+    private DateTime messageExpiry;
+
+    private string selectedSort = "";
+    private string statusFilter = "all";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        try
+        {
+            allTasks = await Http.GetFromJsonAsync<List<TaskModel>>("http://localhost:5194/api/Task") ?? new();
+            ApplyFilterAndSort();
+        }
+        catch
+        {
+            ShowMessage("❌ Failed to load tasks.");
+        }
+    }
+
+    private void ToggleAddTaskForm()
+    {
+        showAddTaskForm = !showAddTaskForm;
+        newTask = new() { DueDate = DateTime.Today };
+    }
+
+    private async Task AddTaskAsync()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("http://localhost:5194/api/Task", newTask);
+            if (response.IsSuccessStatusCode)
+            {
+                ShowMessage("✅ Task added successfully!");
+                showAddTaskForm = false;
+                newTask = new() { DueDate = DateTime.Today };
+                await LoadTasks();
+            }
+            else
+            {
+                ShowMessage("❌ Failed to add task.");
+            }
+        }
+        catch
+        {
+            ShowMessage("❌ Failed to add task.");
+        }
+    }
+
+    private async Task MarkCompleteAsync(int id)
+    {
+        var task = tasks.FirstOrDefault(t => t.Id == id);
+        if (task != null)
+        {
+            task.IsCompleted = true;
+            await Http.PutAsJsonAsync($"http://localhost:5194/api/Task/{id}", task);
+            await LoadTasks();
+        }
+    }
+
+    private async Task DeleteTaskAsync(int id)
+    {
+        var response = await Http.DeleteAsync($"http://localhost:5194/api/Task/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            ShowMessage("🗑️ Task deleted!");
+            await LoadTasks();
+        }
+        else
+        {
+            ShowMessage("❌ Failed to delete task.");
+        }
+    }
+
+    private void ShowMessage(string msg)
+    {
+        message = msg;
+        messageExpiry = DateTime.Now.AddSeconds(5);
+        StateHasChanged();
+    }
+
+    private void ApplyFilterAndSort()
+    {
+        tasks = allTasks;
+
+        tasks = statusFilter switch
+        {
+            "completed" => tasks.Where(t => t.IsCompleted).ToList(),
+            "pending" => tasks.Where(t => !t.IsCompleted).ToList(),
+            _ => tasks.ToList()
+        };
+
+        tasks = selectedSort switch
+        {
+            "id" => tasks.OrderBy(t => t.Id).ToList(),
+            "priority" => tasks.OrderByDescending(t => t.Priority).ToList(),
+            "due" => tasks.OrderBy(t => t.DueDate).ToList(),
+            _ => tasks
+        };
+    }
+
+    private async Task ExportTasksToCsv()
+    {
+        await Task.CompletedTask;
+        if (tasks == null || !tasks.Any()) return;
+
+        var csv = "Id,Title,Description,DueDate,Priority,IsCompleted\n";
+        foreach (var task in tasks)
+        {
+            csv += $"{task.Id},\"{task.Title}\",\"{task.Description}\",{task.DueDate:yyyy-MM-dd},{task.Priority},{task.IsCompleted}\n";
+        }
+
+        await JS.InvokeVoidAsync("downloadFile", "tasks_export.csv", csv);
+    }
+
+    private async Task ExportCompletedTasksToLog()
+    {
+        await Task.CompletedTask;
+        if (tasks == null || !tasks.Any(t => t.IsCompleted)) return;
+
+        var log = string.Join('\n', tasks
+            .Where(t => t.IsCompleted)
+            .Select(t => $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ID: {t.Id} - {t.Title}"));
+
+        await JS.InvokeVoidAsync("downloadFile", "completed_tasks_log.txt", log);
+    }
+
+    private void ExitToHome() => Navigation.NavigateTo("/");
+
+    public class TaskModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public DateTime DueDate { get; set; }
+        public int? Priority { get; set; }
+        public bool IsCompleted { get; set; }
+    }
+}

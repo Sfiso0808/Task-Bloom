@@ -1,0 +1,10 @@
+.vs/
+*.vsidx
+*.user
+*.suo
+*.log
+*.tmp
+node_modules/
+bin/
+obj/
+.env

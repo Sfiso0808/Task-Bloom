@@ -1,0 +1,73 @@
+﻿@page "/addtask"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>➕ Add Task</h3>
+
+<EditForm Model="newTask" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Title:</label>
+        <InputText class="form-control" @bind-Value="newTask.Title" placeholder="Enter task title" />
+    </div>
+
+    <div class="mb-2">
+        <label>Description:</label>
+        <InputText class="form-control" @bind-Value="newTask.Description" placeholder="Enter task description" />
+    </div>
+
+    <div class="mb-2">
+        <label>Due Date:</label>
+        <InputDate class="form-control" @bind-Value="newTask.DueDate" />
+    </div>
+
+    <div class="mb-2">
+        <label>Priority:</label>
+        <select class="form-control" @bind="newTask.Priority">
+            <option disabled value="0">-- Select Priority --</option>
+            <option value="1">1 - Least Important</option>
+            <option value="2">2 - Low</option>
+            <option value="3">3 - Moderate</option>
+            <option value="4">4 - High</option>
+            <option value="5">5 - Urgent</option>
+        </select>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save Task</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info mt-3">@message</div>
+}
+
+@code {
+    private TaskModel newTask = new();
+    private string message = "";
+
+    private async Task HandleValidSubmit()
+    {
+        var response = await Http.PostAsJsonAsync("http://localhost:5194/api/Task", newTask);
+        if (response.IsSuccessStatusCode)
+        {
+            message = "✅ Task added successfully!";
+            Navigation.NavigateTo("/tasks");
+        }
+        else
+        {
+            message = "❌ Failed to add task.";
+        }
+    }
+
+    public class TaskModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public DateTime DueDate { get; set; } = DateTime.Today;
+        public int Priority { get; set; } = 0;
+        public bool IsCompleted { get; set; }
+    }
+}
