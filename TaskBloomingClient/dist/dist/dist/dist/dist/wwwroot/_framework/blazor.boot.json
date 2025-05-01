@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "TaskBloomingClient",
   "resources": {
-    "hash": "sha256-AQ2x97n5XihD5EukTxA2ep2qkB7bSXCTALzGqehggNo=",
+    "hash": "sha256-WA2AkxDo0sIwUWhFYVrfqYEDMJ4e0r4OWBJk+MLtbmM=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-ftpNqtARtVNE8ku5eB/jXoklb41UQ+EutUHfwmbNTBY="
     },
@@ -59,7 +59,7 @@
       "System.Text.Json.wasm": "sha256-Z8wZXwoQmH4Y/nGoIAexwWHp2tWGZywDwhv4B9wnLN0=",
       "System.Text.RegularExpressions.wasm": "sha256-JacQ85bG+fa1MkKqcevpkAm1gNlAC61negcQPi3MA6s=",
       "System.wasm": "sha256-otymJiuBT+MU9q/NBcpZOgV7nwjId4hLVv7Wr1AvWh8=",
-      "TaskBloomingClient.wasm": "sha256-EeZ8LzI21Wy05Jth5cFrWuPO3VjOH7KjrVqwd9rtqC4="
+      "TaskBloomingClient.wasm": "sha256-xtQTU32jyps27ae77U+4H9do3w9gGbeRvzhEtFn2G1I="
     }
   },
   "cacheBootResources": true,

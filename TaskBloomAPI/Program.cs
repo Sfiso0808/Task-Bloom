@@ -30,10 +30,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Middleware order matters:
-app.UseHttpsRedirection();
-
-app.UseCors("AllowAll"); // 💬 CORS MUST come BEFORE routing/authorization!
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 

@@ -9,7 +9,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("http://localhost:5194/") // Your API URL here
+    BaseAddress = new Uri("https://taskbloomapi.onrender.com")
 });
 
 
