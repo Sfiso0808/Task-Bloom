@@ -1,0 +1,9 @@
+.vs/
+*.vsidx
+*.user
+*.suo
+bin/
+obj/
+dist/
+node_modules/
+netlify-build/
